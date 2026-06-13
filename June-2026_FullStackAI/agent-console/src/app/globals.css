@@ -1,0 +1,121 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Color system - Sleek Cyberpunk Dark Mode */
+  --bg-deep: #080a0f;
+  --bg-surface: #0e131f;
+  --bg-card: rgba(20, 27, 45, 0.65);
+  --bg-input: #151e33;
+  --bg-active: #1d2b4a;
+
+  --border: rgba(38, 54, 91, 0.5);
+  --border-focus: #00e5ff;
+  
+  --foreground: #e3e9f5;
+  --fg-dim: #94a3b8;
+  --fg-muted: #64748b;
+
+  --accent-cyan: #00f0ff;
+  --accent-cyan-glow: rgba(0, 240, 255, 0.15);
+  --accent-green: #39ff14;
+  --accent-green-glow: rgba(57, 255, 20, 0.15);
+  --accent-orange: #ff9e00;
+  --accent-orange-glow: rgba(255, 158, 0, 0.15);
+  --accent-red: #ff3366;
+  --accent-red-glow: rgba(255, 51, 102, 0.15);
+  --accent-violet: #8a2be2;
+
+  --glass-blur: blur(12px);
+  --shadow-neon: 0 0 20px rgba(0, 240, 255, 0.15);
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  outline: none;
+}
+
+html,
+body {
+  max-width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: var(--bg-deep);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom Webkit Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--fg-muted);
+}
+
+/* Global utility classes */
+.glass {
+  background: var(--bg-card);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--border);
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+.glow-cyan {
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.15);
+  border-color: var(--accent-cyan);
+}
+
+.glow-green {
+  box-shadow: 0 0 15px rgba(57, 255, 20, 0.15);
+  border-color: var(--accent-green);
+}
+
+.glow-orange {
+  box-shadow: 0 0 15px rgba(255, 158, 0, 0.15);
+  border-color: var(--accent-orange);
+}
+
+/* Animations */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.pulsing {
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

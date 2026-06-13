@@ -1,0 +1,164 @@
+.toastStack {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 380px;
+  max-width: calc(100vw - 48px);
+  pointer-events: none;
+}
+
+.toastItem {
+  position: relative;
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  padding-bottom: 20px;
+  border-radius: 12px;
+  background: rgba(14, 19, 31, 0.85);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+  pointer-events: auto;
+  animation: toastSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(50px) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) translateY(0);
+  }
+}
+
+.iconContainer {
+  display: flex;
+  align-items: flex-start;
+  margin-top: 2px;
+}
+
+.icon_success {
+  color: var(--accent-green);
+  filter: drop-shadow(0 0 6px rgba(57, 255, 20, 0.3));
+}
+
+.icon_error {
+  color: var(--accent-red);
+  filter: drop-shadow(0 0 6px rgba(255, 51, 102, 0.3));
+}
+
+.icon_warning {
+  color: var(--accent-orange);
+  filter: drop-shadow(0 0 6px rgba(255, 158, 0, 0.3));
+}
+
+.icon_info {
+  color: var(--accent-cyan);
+  filter: drop-shadow(0 0 6px rgba(0, 240, 255, 0.3));
+}
+
+.toastContent {
+  flex: 1;
+}
+
+.toastTitle {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 4px;
+  letter-spacing: -0.01em;
+}
+
+.toastMsg {
+  font-size: 0.825rem;
+  color: var(--fg-dim);
+  line-height: 1.4;
+}
+
+.closeBtn {
+  background: transparent;
+  border: none;
+  color: var(--fg-muted);
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s;
+  height: 20px;
+  width: 20px;
+  margin-top: -2px;
+}
+
+.closeBtn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+/* Progress bar at the bottom */
+.progressBar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.progressFill {
+  height: 100%;
+  width: 100%;
+  transform-origin: left;
+  animation: shrinkProgress 4.5s linear forwards;
+}
+
+.fill_success {
+  background: var(--accent-green);
+}
+
+.fill_error {
+  background: var(--accent-red);
+}
+
+.fill_warning {
+  background: var(--accent-orange);
+}
+
+.fill_info {
+  background: var(--accent-cyan);
+}
+
+@keyframes shrinkProgress {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+/* Specific item border overrides for premium glow */
+.toast_success {
+  border-left: 3px solid var(--accent-green);
+}
+
+.toast_error {
+  border-left: 3px solid var(--accent-red);
+}
+
+.toast_warning {
+  border-left: 3px solid var(--accent-orange);
+}
+
+.toast_info {
+  border-left: 3px solid var(--accent-cyan);
+}
