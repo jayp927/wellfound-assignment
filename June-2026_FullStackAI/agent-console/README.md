@@ -8,24 +8,15 @@ This is a systems-focused frontend engineering implementation, built specificall
 
 ## Table of Contents
 
-1. [Architectural Overview](#architectural-overview)
-2. [Connection Lifecycle & State Machine](#connection-lifecycle--state-machine)
-3. [Core Features & In-Depth Walkthrough](#core-features--in-depth-walkthrough)
-   - [Streaming Chat with Tool Interruption](#streaming-chat-with-tool-interruption)
-   - [Agent Trace Timeline & Event Grouping](#agent-trace-timeline--event-grouping)
-   - [Context Inspector & Snapshots Diff Scrubber](#context-inspector--snapshots-diff-scrubber)
-   - [Reconnection & Resume Protocol](#reconnection--resume-protocol)
-   - [Heartbeat Heartbeat System](#heartbeat-heartbeat-system)
-   - [System Monitor & Real-Time Server Verification](#system-monitor--real-time-server-verification)
-4. [Distributed Systems Chaos Resilience](#distributed-systems-chaos-resilience)
-   - [Reordering Buffer](#reordering-buffer)
-   - [Message Deduplication](#message-deduplication)
-5. [Directory Structure](#directory-structure)
-6. [Quick Start & Setup Instructions](#quick-start--setup-instructions)
-   - [Prerequisites](#prerequisites)
-   - [Running the Backend (Agent Server)](#running-the-backend-agent-server)
-   - [Running the Frontend (Agent Console)](#running-the-frontend-agent-console)
-7. [Unit Testing and Linting](#unit-testing-and-linting)
+| Section | Topics & Sub-sections |
+| :--- | :--- |
+| **1. [Architectural Overview](#architectural-overview)** | Ingestion flow, decoupled layers, real-time message stream routing |
+| **2. [Connection Lifecycle & State Machine](#connection-lifecycle--state-machine)** | State Machine Diagram, State definitions (Disconnected, Connecting, Resuming, Connected, Reconnecting) |
+| **3. [Core Features & In-Depth Walkthrough](#core-features--in-depth-walkthrough)** | <ul><li>[Streaming Chat with Tool Interruption](#streaming-chat-with-tool-interruption)</li><li>[Agent Trace Timeline & Event Grouping](#agent-trace-timeline--event-grouping)</li><li>[Context Inspector & Snapshots Diff Scrubber](#context-inspector--snapshots-diff-scrubber)</li><li>[Reconnection & Resume Protocol](#reconnection--resume-protocol)</li><li>[Heartbeat Heartbeat System](#heartbeat-heartbeat-system)</li><li>[System Monitor & Real-Time Server Verification](#system-monitor--real-time-server-verification)</li></ul> |
+| **4. [Distributed Systems Chaos Resilience](#distributed-systems-chaos-resilience)** | <ul><li>[Reordering Buffer](#reordering-buffer)</li><li>[Message Deduplication](#message-deduplication)</li></ul> |
+| **5. [Directory Structure](#directory-structure)** | Folder mapping, file definitions, codebase outline |
+| **6. [Quick Start & Setup Instructions](#quick-start--setup-instructions)** | <ul><li>[Prerequisites](#prerequisites)</li><li>[Running the Backend (Agent Server)](#running-the-backend-agent-server)</li><li>[Running the Frontend (Agent Console)](#running-the-frontend-agent-console)</li></ul> |
+| **7. [Unit Testing and Linting](#unit-testing-and-linting)** | Vitest unit testing, compiler checks (`tsc`), ESLint checks |
 
 ---
 
