@@ -63,13 +63,14 @@ export function useWebSocket({
       clearTimeout(heartbeatTimeoutRef.current);
     }
     // Server pings every 12 seconds.
-    // If no ping is received for 16 seconds, trigger timeout, close connection and reconnect.
+    // If no ping is received for 24 seconds (to accommodate up to 8s server latency spikes in chaos mode),
+    // trigger timeout, close connection and reconnect.
     heartbeatTimeoutRef.current = setTimeout(() => {
       if (wsRef.current === ws) {
         console.warn("[useWebSocket] Heartbeat timeout. Missed server PING. Reconnecting...");
         ws.close();
       }
-    }, 10000);
+    }, 24000);
   }, []);
 
   // Send message helper

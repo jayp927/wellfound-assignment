@@ -389,6 +389,14 @@ export class AgentServer {
           stream_id: streamId,
         };
         await this.sendMessage(ws, endMsg);
+
+        // Flush one last time to ensure STREAM_END (or duplicates of it) is not stuck in the chaos engine's reorder buffer
+        if (this.chaosEngine) {
+          const remaining = this.chaosEngine.flush();
+          for (const msg of remaining) {
+            this.rawSend(ws, msg);
+          }
+        }
       }
     } finally {
       this.isStreaming = false;

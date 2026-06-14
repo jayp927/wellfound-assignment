@@ -123,7 +123,7 @@ async function testToolCallFlow() {
       }
 
       // Respond to PINGs
-      if (msg.type === "PING" && msg.challenge) {
+      if (msg.type === "PING" && typeof msg.challenge === "string") {
         ws.send(JSON.stringify({ type: "PONG", echo: msg.challenge }));
       }
     });
@@ -164,7 +164,7 @@ async function testMultiToolFlow() {
       if (msg.type === "TOOL_CALL") {
         ws.send(JSON.stringify({ type: "TOOL_ACK", call_id: msg.call_id }));
       }
-      if (msg.type === "PING" && msg.challenge) {
+      if (msg.type === "PING" && typeof msg.challenge === "string") {
         ws.send(JSON.stringify({ type: "PONG", echo: msg.challenge }));
       }
       if (msg.type === "STREAM_END") {
@@ -246,7 +246,7 @@ async function testResume() {
       if (msg.type === "TOOL_CALL") {
         ws1.send(JSON.stringify({ type: "TOOL_ACK", call_id: msg.call_id }));
       }
-      if (msg.type === "PING" && msg.challenge) {
+      if (msg.type === "PING" && typeof msg.challenge === "string") {
         ws1.send(JSON.stringify({ type: "PONG", echo: msg.challenge }));
       }
     });
@@ -303,7 +303,7 @@ async function testToolAckLogging() {
           ws.send(JSON.stringify({ type: "TOOL_ACK", call_id: msg.call_id }));
         }, 500);
       }
-      if (msg.type === "PING" && msg.challenge) {
+      if (msg.type === "PING" && typeof msg.challenge === "string") {
         ws.send(JSON.stringify({ type: "PONG", echo: msg.challenge }));
       }
       if (msg.type === "STREAM_END") {
@@ -337,7 +337,7 @@ async function testLargeContext() {
       if (msg.type === "TOOL_CALL") {
         ws.send(JSON.stringify({ type: "TOOL_ACK", call_id: msg.call_id }));
       }
-      if (msg.type === "PING" && msg.challenge) {
+      if (msg.type === "PING" && typeof msg.challenge === "string") {
         ws.send(JSON.stringify({ type: "PONG", echo: msg.challenge }));
       }
       if (msg.type === "STREAM_END") {

@@ -411,8 +411,10 @@ export function ConsoleProvider({ children }: { children: React.ReactNode }) {
           addToast("success", "Status: Connected", "Successfully connected to AI agent server.");
         } else if (status === "disconnected") {
           addToast("error", "Status: Disconnected", "WebSocket connection lost.");
+          setIsStreaming(false); // Reset streaming state on disconnect
         } else if (status === "reconnecting") {
           addToast("warning", "Status: Reconnecting", "WebSocket connection lost. Retrying (exponential backoff)...");
+          setIsStreaming(false); // Reset streaming state on reconnecting
         } else if (status === "resuming") {
           addToast("info", "Status: Resuming State", "Resuming session state...");
         }
