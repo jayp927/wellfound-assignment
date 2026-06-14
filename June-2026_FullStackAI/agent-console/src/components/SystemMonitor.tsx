@@ -14,7 +14,7 @@ import {
 import styles from "./SystemMonitor.module.css";
 
 interface ServerLogEvent {
-  event: string;
+  type: string;
   timestamp: string;
   [key: string]: unknown;
 }
@@ -230,14 +230,15 @@ export default function SystemMonitor() {
                 </thead>
                 <tbody>
                   {serverLogs.map((log, index) => {
-                    const { event, timestamp, ...details } = log;
+                    const { type, timestamp, ...details } = log;
                     const formattedTime = new Date(timestamp).toLocaleTimeString();
+                    const badgeClass = type ? type.toLowerCase().replace(/[^a-z0-9_]/g, "_") : "";
                     return (
                       <tr key={index} className={styles.logRow}>
                         <td className={styles.logTime}>{formattedTime}</td>
                         <td className={styles.logEvent}>
-                          <span className={`${styles.eventBadge} ${styles[`badge_${event}`]}`}>
-                            {event}
+                          <span className={`${styles.eventBadge} ${styles[`badge_${badgeClass}`]}`}>
+                            {type}
                           </span>
                         </td>
                         <td className={styles.logDetails}>

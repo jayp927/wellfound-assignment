@@ -13,9 +13,19 @@
 .header {
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: space-between;
   padding: 8px;
   margin-bottom: 20px;
+}
+
+.brandWrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.closeBtn {
+  display: none;
 }
 
 .logoContainer {
@@ -273,4 +283,39 @@
 .settingsBtn:hover {
   background: rgba(255, 255, 255, 0.05);
   color: #ffffff;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 100;
+    transform: translateX(-100%);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 0 30px rgba(4, 7, 16, 0.6);
+  }
+
+  .sidebar_open {
+    transform: translateX(0);
+  }
+
+  .closeBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: var(--fg-dim);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+  }
+
+  .closeBtn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+  }
 }

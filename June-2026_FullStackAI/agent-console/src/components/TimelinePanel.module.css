@@ -227,8 +227,11 @@
   padding: 8px 12px;
   font-family: var(--font-mono);
   font-size: 0.8rem;
-  overflow-x: auto;
   color: #a5b4fc;
+  white-space: pre-wrap;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+  overflow-x: hidden;
 }
 
 .expandHeader {
@@ -244,3 +247,33 @@
 .expandHeader:hover {
   color: var(--foreground);
 }
+
+@media (max-width: 768px) {
+  .header {
+    padding: 10px 16px;
+    gap: 8px;
+  }
+
+  .title {
+    display: none;
+  }
+
+  .scrollArea {
+    padding: 14px 12px;
+  }
+
+  .row {
+    padding: 6px 8px;
+    gap: 12px;
+  }
+
+  .payload {
+    font-size: 0.8rem;
+  }
+
+  .expandable {
+    font-size: 0.75rem;
+    padding: 6px 10px;
+  }
+}
+

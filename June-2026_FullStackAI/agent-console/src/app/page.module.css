@@ -4,6 +4,27 @@
   height: 100vh;
   overflow: hidden;
   background-color: var(--bg-deep);
+  position: relative;
+}
+
+.backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(4, 7, 16, 0.7);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 90;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.backdrop_active {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .mainContent {
@@ -12,11 +33,95 @@
   overflow: hidden;
   position: relative;
   background-color: var(--bg-surface);
+  display: flex;
+  flex-direction: column;
 }
 
 .viewWrapper {
   width: 100%;
-  height: 100%;
+  flex: 1;
   overflow: hidden;
 }
+
+.mobileHeader {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobileHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 18px;
+    background-color: #0b0f19;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    flex-shrink: 0;
+  }
+
+  .hamburgerBtn {
+    background: transparent;
+    border: none;
+    color: var(--fg-dim);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+  }
+
+  .hamburgerBtn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+  }
+
+  .headerSpacer {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+  }
+
+  .mobileBrand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .logoContainer {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-violet));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+  }
+
+  .logoIcon {
+    color: #ffffff;
+  }
+
+  .brandTitle h3 {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+
+  .brandTitle span {
+    font-size: 0.6rem;
+    color: var(--fg-muted);
+    font-family: var(--font-mono);
+    display: block;
+    line-height: 1;
+  }
+}
+
 

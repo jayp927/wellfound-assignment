@@ -13,6 +13,7 @@ import {
   User,
   Settings,
   Sparkles,
+  X,
 } from "lucide-react";
 import styles from "./Sidebar.module.css";
 
@@ -25,7 +26,12 @@ const PRESET_SCENARIOS = [
   { text: "detailed document explain", label: "Long Stream Response" },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const {
     activeTab,
     setActiveTab,
@@ -37,10 +43,12 @@ export default function Sidebar() {
   const handleNewSession = () => {
     resetConsoleState();
     setActiveTab("chat");
+    onClose();
   };
 
   const handlePresetClick = (text: string) => {
     setActiveTab("chat");
+    onClose();
     // Small delay to ensure render transition has processed before stream triggers
     setTimeout(() => {
       sendUserMessage(text);
@@ -48,16 +56,22 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className={styles.sidebar}>
+    <aside className={`${styles.sidebar} ${isOpen ? styles.sidebar_open : ""}`}>
       {/* Brand Header */}
       <div className={styles.header}>
-        <div className={styles.logoContainer}>
-          <Sparkles size={20} className={styles.logoIcon} />
+        <div className={styles.brandWrapper}>
+          <div className={styles.logoContainer}>
+            <Sparkles size={20} className={styles.logoIcon} />
+          </div>
+          <div className={styles.brandTitle}>
+            <h3>Alchemyst AI</h3>
+            <span>Agent Console v2</span>
+          </div>
         </div>
-        <div className={styles.brandTitle}>
-          <h3>Alchemyst AI</h3>
-          <span>Agent Console v2</span>
-        </div>
+        
+        <button className={styles.closeBtn} onClick={onClose} aria-label="Close sidebar">
+          <X size={18} />
+        </button>
       </div>
 
       {/* New Session Action */}
@@ -70,7 +84,10 @@ export default function Sidebar() {
       <nav className={styles.nav}>
         <button
           className={`${styles.navItem} ${activeTab === "chat" ? styles.navItem_active : ""}`}
-          onClick={() => setActiveTab("chat")}
+          onClick={() => {
+            setActiveTab("chat");
+            onClose();
+          }}
         >
           <MessageSquare size={16} />
           <span>AI Chat Agent</span>
@@ -79,7 +96,10 @@ export default function Sidebar() {
 
         <button
           className={`${styles.navItem} ${activeTab === "timeline" ? styles.navItem_active : ""}`}
-          onClick={() => setActiveTab("timeline")}
+          onClick={() => {
+            setActiveTab("timeline");
+            onClose();
+          }}
         >
           <Activity size={16} />
           <span>Trace Timeline</span>
@@ -88,7 +108,10 @@ export default function Sidebar() {
 
         <button
           className={`${styles.navItem} ${activeTab === "context" ? styles.navItem_active : ""}`}
-          onClick={() => setActiveTab("context")}
+          onClick={() => {
+            setActiveTab("context");
+            onClose();
+          }}
         >
           <Database size={16} />
           <span>Context Inspector</span>
@@ -97,20 +120,14 @@ export default function Sidebar() {
 
         <button
           className={`${styles.navItem} ${activeTab === "monitor" ? styles.navItem_active : ""}`}
-          onClick={() => setActiveTab("monitor")}
+          onClick={() => {
+            setActiveTab("monitor");
+            onClose();
+          }}
         >
           <Server size={16} />
           <span>System Monitor</span>
           {activeTab === "monitor" && <ChevronRight size={14} className={styles.activeIndicator} />}
-        </button>
-
-        <button
-          className={`${styles.navItem} ${activeTab === "server-logs" ? styles.navItem_active : ""}`}
-          onClick={() => setActiveTab("server-logs")}
-        >
-          <Terminal size={16} />
-          <span>Server Logs</span>
-          {activeTab === "server-logs" && <ChevronRight size={14} className={styles.activeIndicator} />}
         </button>
       </nav>
 

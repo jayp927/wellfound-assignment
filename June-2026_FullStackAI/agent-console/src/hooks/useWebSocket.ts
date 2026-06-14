@@ -14,7 +14,6 @@ interface UseWebSocketOptions {
   onMessage: (message: ServerMessage, isReplayed: boolean) => void;
   onRawMessageReceived?: (message: ServerMessage, isDuplicate: boolean) => void;
   onStatusChange?: (status: ConnectionStatus) => void;
-  onServerLog?: (logLine: string) => void;
 }
 
 export function useWebSocket({
@@ -22,7 +21,6 @@ export function useWebSocket({
   onMessage,
   onRawMessageReceived,
   onStatusChange,
-  onServerLog,
 }: UseWebSocketOptions) {
   const [status, setStatusState] = useState<ConnectionStatus>("disconnected");
   const wsRef = useRef<WebSocket | null>(null);
@@ -30,6 +28,9 @@ export function useWebSocket({
   const reconnectAttemptRef = useRef<number>(0);
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isManuallyClosedRef = useRef<boolean>(false);
+
+  // Heartbeat timeout ref
+  const heartbeatTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Resume tracking
   const isResumingRef = useRef<boolean>(false);
@@ -39,13 +40,11 @@ export function useWebSocket({
   const onMessageRef = useRef(onMessage);
   const onRawMessageReceivedRef = useRef(onRawMessageReceived);
   const onStatusChangeRef = useRef(onStatusChange);
-  const onServerLogRef = useRef(onServerLog);
 
   useEffect(() => {
     onMessageRef.current = onMessage;
     onRawMessageReceivedRef.current = onRawMessageReceived;
     onStatusChangeRef.current = onStatusChange;
-    onServerLogRef.current = onServerLog;
   });
 
   // Sync state changes with callbacks
@@ -58,6 +57,20 @@ export function useWebSocket({
     },
     []
   );
+
+  const resetHeartbeatTimeout = useCallback((ws: WebSocket) => {
+    if (heartbeatTimeoutRef.current) {
+      clearTimeout(heartbeatTimeoutRef.current);
+    }
+    // Server pings every 12 seconds.
+    // If no ping is received for 16 seconds, trigger timeout, close connection and reconnect.
+    heartbeatTimeoutRef.current = setTimeout(() => {
+      if (wsRef.current === ws) {
+        console.warn("[useWebSocket] Heartbeat timeout. Missed server PING. Reconnecting...");
+        ws.close();
+      }
+    }, 10000);
+  }, []);
 
   // Send message helper
   const sendMessage = useCallback((msg: ClientMessage) => {
@@ -81,9 +94,6 @@ export function useWebSocket({
     const isRetry = currentAttempt > 0;
     setStatus(isRetry ? "reconnecting" : "connecting");
 
-    // Output server-style stdout logs
-    onServerLogRef.current?.("[agent-server] New WebSocket connection");
-
     const ws = new WebSocket(url);
     wsRef.current = ws;
 
@@ -91,6 +101,9 @@ export function useWebSocket({
       if (wsRef.current !== ws) return;
       console.log("[useWebSocket] Socket opened");
       reconnectAttemptRef.current = 0;
+
+      // Start/reset heartbeat timer
+      resetHeartbeatTimeout(ws);
 
       const lastSeq = reorderBufferRef.current.getLastProcessedSeq();
       if (lastSeq > 0) {
@@ -100,14 +113,12 @@ export function useWebSocket({
         replayedCountRef.current = 0;
 
         console.log(`[useWebSocket] Resuming state from seq=${lastSeq}`);
-        onServerLogRef.current?.(`[agent-server] Resume from seq=${lastSeq}, history has ${lastSeq} events`);
 
         ws.send(JSON.stringify({ type: "RESUME", last_seq: lastSeq }));
 
         // Move to connected after resume is sent (with small delay so React can register/render resuming state)
         setTimeout(() => {
           if (wsRef.current === ws) {
-            onServerLogRef.current?.(`[agent-server] Replaying ${replayedCountRef.current} events`);
             isResumingRef.current = false;
             setStatus("connected");
           }
@@ -129,6 +140,9 @@ export function useWebSocket({
 
       // 1. Core heartbeat response (PING/PONG) must bypass the buffer entirely to prevent timeouts
       if (rawMsg.type === "PING") {
+        // Reset heartbeat timeout
+        resetHeartbeatTimeout(ws);
+
         const challenge = rawMsg.challenge;
         console.log(`[useWebSocket] Received PING with challenge="${challenge}", sending PONG`);
         sendMessage({ type: "PONG", echo: challenge });
@@ -198,13 +212,17 @@ export function useWebSocket({
       if (wsRef.current !== ws) return;
       console.log(`[useWebSocket] Socket closed: code=${event.code}, reason=${event.reason}`);
       setStatus("disconnected");
-      onServerLogRef.current?.(`[agent-server] Connection closed: ${event.code}`);
+
+      // Clear heartbeat timeout
+      if (heartbeatTimeoutRef.current) {
+        clearTimeout(heartbeatTimeoutRef.current);
+        heartbeatTimeoutRef.current = null;
+      }
 
       // Don't auto-reconnect if manually closed or replaced by another connection
       if (isManuallyClosedRef.current || event.reason === "replaced") {
         if (event.reason === "replaced") {
           console.log("[useWebSocket] Connection replaced by another client. Staying offline.");
-          onServerLogRef.current?.("[useWebSocket] Connection replaced by another client. Staying offline.");
         }
         return;
       }
@@ -225,7 +243,7 @@ export function useWebSocket({
       if (wsRef.current !== ws) return;
       console.error("[useWebSocket] Socket error:", err);
     };
-  }, [url, setStatus, sendMessage]);
+  }, [url, setStatus, sendMessage, resetHeartbeatTimeout]);
 
   const disconnect = useCallback(() => {
     isManuallyClosedRef.current = true;
@@ -233,6 +251,10 @@ export function useWebSocket({
     if (reconnectTimeoutRef.current) {
       clearTimeout(reconnectTimeoutRef.current);
       reconnectTimeoutRef.current = null;
+    }
+    if (heartbeatTimeoutRef.current) {
+      clearTimeout(heartbeatTimeoutRef.current);
+      heartbeatTimeoutRef.current = null;
     }
     if (wsRef.current) {
       wsRef.current.close();
@@ -254,6 +276,9 @@ export function useWebSocket({
       isManuallyClosedRef.current = true;
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
+      }
+      if (heartbeatTimeoutRef.current) {
+        clearTimeout(heartbeatTimeoutRef.current);
       }
       if (wsRef.current) {
         wsRef.current.close();

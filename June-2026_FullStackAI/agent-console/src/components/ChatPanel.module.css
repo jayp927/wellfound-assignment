@@ -344,3 +344,61 @@
     transform: translateY(0);
   }
 }
+
+@media (max-width: 768px) {
+  .header {
+    padding: 10px 16px;
+  }
+
+  .title {
+    display: none;
+  }
+
+  .feed {
+    padding: 14px 12px;
+    gap: 14px;
+  }
+
+  .bubble {
+    max-width: 92%;
+    padding: 12px 16px;
+    font-size: 0.9rem;
+    border-radius: 12px;
+  }
+
+  .inputArea {
+    padding: 14px 16px;
+  }
+
+  .input {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+    border-radius: 8px;
+  }
+
+  .sendButton {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+  }
+
+  .emptyState {
+    padding: 20px 16px;
+    gap: 12px;
+  }
+
+  .emptyTitle {
+    font-size: 1.15rem;
+  }
+
+  .emptyText {
+    font-size: 0.85rem;
+    line-height: 1.4;
+  }
+
+  .chip {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+  }
+}
+

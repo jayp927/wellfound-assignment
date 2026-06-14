@@ -249,6 +249,22 @@
   border-collapse: collapse;
   font-size: 0.8rem;
   text-align: left;
+  table-layout: fixed;
+}
+
+.logsTable th:nth-child(1),
+.logsTable td:nth-child(1) {
+  width: 90px;
+}
+
+.logsTable th:nth-child(2),
+.logsTable td:nth-child(2) {
+  width: 120px;
+}
+
+.logsTable th:nth-child(3),
+.logsTable td:nth-child(3) {
+  width: auto;
 }
 
 .logsTable th {
@@ -316,3 +332,63 @@
   word-break: break-all;
   margin: 0;
 }
+
+@media (max-width: 768px) {
+  .header {
+    padding: 10px 16px;
+    height: auto;
+    min-height: 48px;
+  }
+
+  .title {
+    display: none;
+  }
+
+  .scrollArea {
+    padding: 14px 12px;
+  }
+
+  .statsGrid {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .card {
+    padding: 12px;
+  }
+
+  .metaGrid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .logsSection {
+    padding: 12px;
+  }
+
+  .logsTable th,
+  .logsTable td {
+    padding: 8px;
+    font-size: 0.75rem;
+  }
+
+  .logsTable th:nth-child(1),
+  .logsTable td:nth-child(1) {
+    width: 70px;
+  }
+
+  .logsTable th:nth-child(2),
+  .logsTable td:nth-child(2) {
+    width: 95px;
+  }
+
+  .logsContainer {
+    overflow-x: hidden;
+  }
+
+  .logTime {
+    font-size: 0.7rem;
+  }
+}
+
