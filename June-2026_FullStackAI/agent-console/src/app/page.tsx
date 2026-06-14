@@ -7,7 +7,7 @@ import ChatPanel from "@/components/ChatPanel";
 import TimelinePanel from "@/components/TimelinePanel";
 import ContextInspector from "@/components/ContextInspector";
 import SystemMonitor from "@/components/SystemMonitor";
-import ToastContainer from "@/components/ToastContainer";
+import ServerLogsPanel from "@/components/ServerLogsPanel";
 import styles from "./page.module.css";
 
 export default function Home() {
@@ -37,8 +37,12 @@ export default function Home() {
             <SystemMonitor />
           </div>
         )}
+        {activeTab === "server-logs" && (
+          <div className={`${styles.viewWrapper} animate-slide-in`}>
+            <ServerLogsPanel />
+          </div>
+        )}
       </main>
-      <ToastContainer />
     </div>
   );
 }

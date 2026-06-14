@@ -103,6 +103,15 @@ export default function Sidebar() {
           <span>System Monitor</span>
           {activeTab === "monitor" && <ChevronRight size={14} className={styles.activeIndicator} />}
         </button>
+
+        <button
+          className={`${styles.navItem} ${activeTab === "server-logs" ? styles.navItem_active : ""}`}
+          onClick={() => setActiveTab("server-logs")}
+        >
+          <Terminal size={16} />
+          <span>Server Logs</span>
+          {activeTab === "server-logs" && <ChevronRight size={14} className={styles.activeIndicator} />}
+        </button>
       </nav>
 
       {/* Recents/Preset Scenarios */}

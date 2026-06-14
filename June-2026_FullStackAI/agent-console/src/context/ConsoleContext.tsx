@@ -72,8 +72,8 @@ interface ConsoleContextType {
   activeStreamId: string | null;
   selectedElementId: string | null; // For timeline -> chat tracing
   highlightedTimelineEventId: string | null; // For chat -> timeline tracing
-  activeTab: "chat" | "timeline" | "context" | "monitor";
-  setActiveTab: (tab: "chat" | "timeline" | "context" | "monitor") => void;
+  activeTab: "chat" | "timeline" | "context" | "monitor" | "server-logs";
+  setActiveTab: (tab: "chat" | "timeline" | "context" | "monitor" | "server-logs") => void;
   toasts: ToastMessage[];
   addToast: (type: ToastMessage["type"], title: string, message: string) => void;
   removeToast: (id: string) => void;
@@ -83,6 +83,7 @@ interface ConsoleContextType {
   setSelectedElementId: (id: string | null) => void;
   setHighlightedTimelineEventId: (id: string | null) => void;
   resetConsoleState: () => void;
+  serverStdoutLogs: string[];
 }
 
 const ConsoleContext = createContext<ConsoleContextType | undefined>(undefined);
@@ -99,12 +100,16 @@ export function ConsoleProvider({ children }: { children: React.ReactNode }) {
   const [highlightedTimelineEventId, setHighlightedTimelineEventId] = useState<string | null>(null);
 
   // Tab & Toast states
-  const [activeTab, setActiveTab] = useState<"chat" | "timeline" | "context" | "monitor">("chat");
+  const [activeTab, setActiveTab] = useState<"chat" | "timeline" | "context" | "monitor" | "server-logs">("chat");
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
+  const [serverStdoutLogs, setServerStdoutLogs] = useState<string[]>([]);
+
+  const addServerLog = useCallback((line: string) => {
+    setServerStdoutLogs((prev) => [...prev, line]);
+  }, []);
 
   const addToast = useCallback((type: ToastMessage["type"], title: string, message: string) => {
-    const id = `toast_${Date.now()}_${Math.random()}`;
-    setToasts((prev) => [...prev, { id, type, title, message }]);
+    // Flash messages disabled as of now
   }, []);
 
   const removeToast = useCallback((id: string) => {
@@ -402,6 +407,7 @@ export function ConsoleProvider({ children }: { children: React.ReactNode }) {
     url: "ws://localhost:4747/ws",
     onMessage: handleMessage,
     onRawMessageReceived: handleRawMessageReceived,
+    onServerLog: addServerLog,
   });
 
   // Monitor connection status changes for Toasts
@@ -521,6 +527,7 @@ export function ConsoleProvider({ children }: { children: React.ReactNode }) {
     setChatItems([]);
     setTimelineEvents([]);
     setContextSnapshots({});
+    setServerStdoutLogs([]);
     setIsStreaming(false);
     setActiveStreamId(null);
     resetBuffer(0);
@@ -549,6 +556,7 @@ export function ConsoleProvider({ children }: { children: React.ReactNode }) {
         setSelectedElementId,
         setHighlightedTimelineEventId,
         resetConsoleState,
+        serverStdoutLogs,
       }}
     >
       {children}

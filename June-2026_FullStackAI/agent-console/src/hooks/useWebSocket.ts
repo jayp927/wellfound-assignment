@@ -14,6 +14,7 @@ interface UseWebSocketOptions {
   onMessage: (message: ServerMessage, isReplayed: boolean) => void;
   onRawMessageReceived?: (message: ServerMessage, isDuplicate: boolean) => void;
   onStatusChange?: (status: ConnectionStatus) => void;
+  onServerLog?: (logLine: string) => void;
 }
 
 export function useWebSocket({
@@ -21,6 +22,7 @@ export function useWebSocket({
   onMessage,
   onRawMessageReceived,
   onStatusChange,
+  onServerLog,
 }: UseWebSocketOptions) {
   const [status, setStatusState] = useState<ConnectionStatus>("disconnected");
   const wsRef = useRef<WebSocket | null>(null);
@@ -29,15 +31,32 @@ export function useWebSocket({
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isManuallyClosedRef = useRef<boolean>(false);
 
+  // Resume tracking
+  const isResumingRef = useRef<boolean>(false);
+  const replayedCountRef = useRef<number>(0);
+
+  // Keep options in mutable refs to avoid resetting the WebSocket connection
+  const onMessageRef = useRef(onMessage);
+  const onRawMessageReceivedRef = useRef(onRawMessageReceived);
+  const onStatusChangeRef = useRef(onStatusChange);
+  const onServerLogRef = useRef(onServerLog);
+
+  useEffect(() => {
+    onMessageRef.current = onMessage;
+    onRawMessageReceivedRef.current = onRawMessageReceived;
+    onStatusChangeRef.current = onStatusChange;
+    onServerLogRef.current = onServerLog;
+  });
+
   // Sync state changes with callbacks
   const setStatus = useCallback(
     (newStatus: ConnectionStatus) => {
       setStatusState(newStatus);
-      if (onStatusChange) {
-        onStatusChange(newStatus);
+      if (onStatusChangeRef.current) {
+        onStatusChangeRef.current(newStatus);
       }
     },
-    [onStatusChange]
+    []
   );
 
   // Send message helper
@@ -62,10 +81,14 @@ export function useWebSocket({
     const isRetry = currentAttempt > 0;
     setStatus(isRetry ? "reconnecting" : "connecting");
 
+    // Output server-style stdout logs
+    onServerLogRef.current?.("[agent-server] New WebSocket connection");
+
     const ws = new WebSocket(url);
     wsRef.current = ws;
 
     ws.onopen = () => {
+      if (wsRef.current !== ws) return;
       console.log("[useWebSocket] Socket opened");
       reconnectAttemptRef.current = 0;
 
@@ -73,16 +96,29 @@ export function useWebSocket({
       if (lastSeq > 0) {
         // We have state to recover! Send RESUME
         setStatus("resuming");
+        isResumingRef.current = true;
+        replayedCountRef.current = 0;
+
         console.log(`[useWebSocket] Resuming state from seq=${lastSeq}`);
+        onServerLogRef.current?.(`[agent-server] Resume from seq=${lastSeq}, history has ${lastSeq} events`);
+
         ws.send(JSON.stringify({ type: "RESUME", last_seq: lastSeq }));
-        // Move to connected after resume is sent
-        setStatus("connected");
+
+        // Move to connected after resume is sent (with small delay so React can register/render resuming state)
+        setTimeout(() => {
+          if (wsRef.current === ws) {
+            onServerLogRef.current?.(`[agent-server] Replaying ${replayedCountRef.current} events`);
+            isResumingRef.current = false;
+            setStatus("connected");
+          }
+        }, 150);
       } else {
         setStatus("connected");
       }
     };
 
     ws.onmessage = (event) => {
+      if (wsRef.current !== ws) return;
       let rawMsg: ServerMessage;
       try {
         rawMsg = JSON.parse(event.data) as ServerMessage;
@@ -98,14 +134,16 @@ export function useWebSocket({
         sendMessage({ type: "PONG", echo: challenge });
 
         // Still process the PING in raw message logger (for timeline)
-        if (onRawMessageReceived) {
-          onRawMessageReceived(rawMsg, false);
+        if (onRawMessageReceivedRef.current) {
+          onRawMessageReceivedRef.current(rawMsg, false);
         }
 
         // PING also goes to reordering buffer to advance lastProcessedSeq in sequence
         const ready = reorderBufferRef.current.add(rawMsg);
         for (const msg of ready) {
-          onMessage(msg, false);
+          if (onMessageRef.current) {
+            onMessageRef.current(msg, isResumingRef.current);
+          }
         }
         return;
       }
@@ -113,16 +151,18 @@ export function useWebSocket({
       // 2. ERROR messages bypass the buffer immediately for UI visibility
       if (rawMsg.type === "ERROR") {
         console.error("[useWebSocket] Server error received:", rawMsg.message);
-        if (onRawMessageReceived) {
-          onRawMessageReceived(rawMsg, false);
+        if (onRawMessageReceivedRef.current) {
+          onRawMessageReceivedRef.current(rawMsg, false);
         }
-        onMessage(rawMsg, false);
+        if (onMessageRef.current) {
+          onMessageRef.current(rawMsg, isResumingRef.current);
+        }
 
         // Also feed into reorder buffer to maintain seq numbers
         const ready = reorderBufferRef.current.add(rawMsg);
         for (const msg of ready) {
-          if (msg.type !== "ERROR") {
-            onMessage(msg, false);
+          if (msg.type !== "ERROR" && onMessageRef.current) {
+            onMessageRef.current(msg, isResumingRef.current);
           }
         }
         return;
@@ -131,8 +171,8 @@ export function useWebSocket({
       // 3. Normal stream message processing
       const isDuplicate = reorderBufferRef.current.isDuplicateOrOld(rawMsg.seq);
 
-      if (onRawMessageReceived) {
-        onRawMessageReceived(rawMsg, isDuplicate);
+      if (onRawMessageReceivedRef.current) {
+        onRawMessageReceivedRef.current(rawMsg, isDuplicate);
       }
 
       if (isDuplicate) {
@@ -140,19 +180,34 @@ export function useWebSocket({
         return;
       }
 
+      // Increment count of replayed messages during resume
+      if (isResumingRef.current) {
+        replayedCountRef.current++;
+      }
+
       // Add to reorder queue
       const readyMessages = reorderBufferRef.current.add(rawMsg);
       for (const msg of readyMessages) {
-        onMessage(msg, false);
+        if (onMessageRef.current) {
+          onMessageRef.current(msg, isResumingRef.current);
+        }
       }
     };
 
     ws.onclose = (event) => {
+      if (wsRef.current !== ws) return;
       console.log(`[useWebSocket] Socket closed: code=${event.code}, reason=${event.reason}`);
       setStatus("disconnected");
+      onServerLogRef.current?.(`[agent-server] Connection closed: ${event.code}`);
 
-      // Don't auto-reconnect if manually closed
-      if (isManuallyClosedRef.current) return;
+      // Don't auto-reconnect if manually closed or replaced by another connection
+      if (isManuallyClosedRef.current || event.reason === "replaced") {
+        if (event.reason === "replaced") {
+          console.log("[useWebSocket] Connection replaced by another client. Staying offline.");
+          onServerLogRef.current?.("[useWebSocket] Connection replaced by another client. Staying offline.");
+        }
+        return;
+      }
 
       // Exponential backoff reconnect
       const backoffMs = Math.min(500 * Math.pow(2, reconnectAttemptRef.current), 10000);
@@ -160,14 +215,17 @@ export function useWebSocket({
       reconnectAttemptRef.current++;
 
       reconnectTimeoutRef.current = setTimeout(() => {
-        connect();
+        if (wsRef.current === ws) {
+          connect();
+        }
       }, backoffMs);
     };
 
     ws.onerror = (err) => {
+      if (wsRef.current !== ws) return;
       console.error("[useWebSocket] Socket error:", err);
     };
-  }, [url, onMessage, onRawMessageReceived, setStatus, sendMessage]);
+  }, [url, setStatus, sendMessage]);
 
   const disconnect = useCallback(() => {
     isManuallyClosedRef.current = true;
